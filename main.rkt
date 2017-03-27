@@ -1545,10 +1545,9 @@
 ; choose a dest through a dialog
 
 (define stdout (current-output-port))
-(current-output-port (open-output-nowhere))
-;(current-error-port (open-output-nowhere))
 
-(define dc (new svg-dc% [width 1000] [height 1300] [output stdout])) 
+
+(define dc (new svg-dc% [width 1000] [height 1300] [output "amati_output.svg"] [exists 'truncate/replace])) 
 
 (send dc start-doc "...")
 (send dc start-page)
