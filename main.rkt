@@ -1036,7 +1036,7 @@
                    (let ((a (xcor p))
                          (b (ycor p)))
                      (let ((m (+ (* 10 (abs (- i (/ d 20)))) 0)))
-                       (send global-drawing-context draw-text (if (< m 300) (~r m) "") a b))))
+                       (send (current-drawing-context) draw-text (if (< m 300) (~r m) "") a b))))
                  'nothing))             
            n))))
 
@@ -1053,16 +1053,16 @@
                  (let ((p (map-point (point (- 5 x) (- y (* 10 i))))))
                    (let ((a (xcor p))
                          (b (ycor p)))
-                     (send global-drawing-context draw-text (let ((j (* 10 (- i (/ d 20)))))
-                                                              (if (< (- j) 500) (~r (abs j)) "")) (+ a 5) (- b 8))))
+                     (send (current-drawing-context) draw-text (let ((j (* 10 (- i (/ d 20)))))
+                                                                 (if (< (- j) 500) (~r (abs j)) "")) (+ a 5) (- b 8))))
                  'nothing))             
            n))))
 
 (define (drawrulersegment p1 p2)
   (let ((p1 (map-point p1))
         (p2 (map-point p2)))
-    (send global-drawing-context set-pen arc-color 0 'solid)
-    (send global-drawing-context draw-line (xcor p1) (ycor p1) (xcor p2) (ycor p2))))
+    (send (current-drawing-context) set-pen arc-color 0 'solid)
+    (send (current-drawing-context) draw-line (xcor p1) (ycor p1) (xcor p2) (ycor p2))))
 
 ;(define scale 1.5)                         ; for 1 meter width
 
@@ -1114,11 +1114,11 @@
 
 (define (draw-point-1 pt c)
   (let ((p (map-point pt)))
-    (send global-drawing-context set-brush c 'solid)
-    (send global-drawing-context set-pen c 1 'solid)
-    (send global-drawing-context draw-rectangle (- (xcor p) 2) (- (ycor p) 2) 4 4)
-    (send global-drawing-context draw-text (cadr pt)  (xcor p) (ycor p))
-    (send global-drawing-context set-brush c 'transparent)))
+    (send (current-drawing-context) set-brush c 'solid)
+    (send (current-drawing-context) set-pen c 1 'solid)
+    (send (current-drawing-context) draw-rectangle (- (xcor p) 2) (- (ycor p) 2) 4 4)
+    (send (current-drawing-context) draw-text (cadr pt)  (xcor p) (ycor p))
+    (send (current-drawing-context) set-brush c 'transparent)))
 
 (define (edge-line p1 p2)
   (let* ((l (line p1 p2))
@@ -1136,8 +1136,8 @@
 (define (drawsolidline p1 p2 c)   
   (let ((p1 (map-point p1))
         (p2 (map-point p2)))
-    (send global-drawing-context set-pen c (if (eq? c arc-color) arc-thickness 0) 'solid)
-    (send global-drawing-context draw-line (xcor p1) (ycor p1) (xcor p2) (ycor p2))))        
+    (send (current-drawing-context) set-pen c (if (eq? c arc-color) arc-thickness 0) 'solid)
+    (send (current-drawing-context) draw-line (xcor p1) (ycor p1) (xcor p2) (ycor p2))))        
   
 (define (draw-solid-line p1 p2 c)
   (drawsolidline p1 p2 c)
@@ -1145,26 +1145,26 @@
 
 (define (drawline l c)
   (if drawp (begin
-              (send global-drawing-context set-pen c 0 'solid)
+              (send (current-drawing-context) set-pen c 0 'solid)
               (let ((p1 (map-point (first-point l)))
                     (p2 (map-point (second-point l))))
                 (let ((l (line p1 p2)))
                   (if (eq? (slope l) 'infinity)
-                      (send global-drawing-context draw-line (xcor p1) 1 (xcor p1) yy)
+                      (send (current-drawing-context) draw-line (xcor p1) 1 (xcor p1) yy)
                       (let ((f (linefun l)))
-                        (send global-drawing-context draw-line 1 (f 0) xx (f xx)))))))
+                        (send (current-drawing-context) draw-line 1 (f 0) xx (f xx)))))))
       'nothing))
 
 (define (drawcircle circ c)
   (if drawp (begin
-              (send global-drawing-context set-pen c 0 'solid)
+              (send (current-drawing-context) set-pen c 0 'solid)
               (let ((p (map-point (center circ)))
                     (r (* scale (radius circ))))
                 (let ((q (vec+ p (scalevec r (point -1 -1)))))
-                  (send global-drawing-context set-brush c 'solid)
-                  (send global-drawing-context set-pen c 0 'solid)
-                  (send global-drawing-context set-brush c 'transparent)
-                  (send global-drawing-context draw-ellipse (xcor q) (ycor q) (* 2 r) (* 2 r)))))
+                  (send (current-drawing-context) set-brush c 'solid)
+                  (send (current-drawing-context) set-pen c 0 'solid)
+                  (send (current-drawing-context) set-brush c 'transparent)
+                  (send (current-drawing-context) draw-ellipse (xcor q) (ycor q) (* 2 r) (* 2 r)))))
       'nothing))
 
 (define (angle y x)
@@ -1210,8 +1210,8 @@
 (define Delta 1)
 
 (define (dsl p1 p2)
-  (send global-drawing-context set-pen arc-color 0 'solid)
-  (send global-drawing-context draw-line (xcor p1) (ycor p1) (xcor p2) (ycor p2)))
+  (send (current-drawing-context) set-pen arc-color 0 'solid)
+  (send (current-drawing-context) draw-line (xcor p1) (ycor p1) (xcor p2) (ycor p2)))
 
 (define (darc x y w a b)
   (let ((c (point (+ x (/ w 2)) (- y (/ w 2))))
@@ -1275,11 +1275,11 @@
           (beta (max alpha beta))
           (corner (vec+ (map-point oo) (scalevec r1 (point -1 -1)))))
       ;            (write (list (r->ang alpha) (r->ang beta))) (newline)
-      (send global-drawing-context set-pen "yellow" 0 'solid)
-      (send global-drawing-context set-brush "yellow" 'transparent)
+      (send (current-drawing-context) set-pen "yellow" 0 'solid)
+      (send (current-drawing-context) set-brush "yellow" 'transparent)
       ;            (send dc draw-rectangle (xcor corner) (ycor corner) (* 2 r) (* 2 r))
-      (send global-drawing-context set-pen c arc-thickness 'solid)
-      (send global-drawing-context set-brush c 'transparent)
+      (send (current-drawing-context) set-pen c arc-thickness 'solid)
+      (send (current-drawing-context) set-brush c 'transparent)
       (if (> (- beta alpha) pi)
           ; 0.0 was 0.5
           ;              (darc (+ 0.0 (xcor corner)) (+ 0.0 (ycor corner))
@@ -1288,10 +1288,10 @@
           ;              (darc (+ 0.0 (xcor corner)) (+ 0.0 (ycor corner))
           ;                                (* 2 (+ 0.0 r)) 
           ;                                alpha beta)
-          (send global-drawing-context draw-arc (+ 0.0 (xcor corner)) (+ 0.0 (ycor corner))
+          (send (current-drawing-context) draw-arc (+ 0.0 (xcor corner)) (+ 0.0 (ycor corner))
                 (* 2 (+ 0.0 r1)) (* 2 (+ 0.0 r1)) 
                 beta (+ alpha (* 2 pi)))
-          (send global-drawing-context draw-arc (+ 0.0 (xcor corner)) (+ 0.0 (ycor corner))
+          (send (current-drawing-context) draw-arc (+ 0.0 (xcor corner)) (+ 0.0 (ycor corner))
                 (* 2 (+ 0.0 r1)) (* 2 (+ 0.0 r1))
                 alpha beta)
           ))))
@@ -1540,20 +1540,34 @@
             '()
             (segs (car l) (cdr l)))))
 
-(provide global-drawing-context)
+;(provide global-drawing-context)
 ; initialize graphic output
 ; choose a dest through a dialog
 
-(define stdout (current-output-port))
+(provide current-drawing-context)
 
+(define current-drawing-context (make-parameter #f))
 
-(define global-drawing-context (new svg-dc% [width 1000] [height 1300] [output "amati_output.svg"] [exists 'truncate/replace])) 
+(provide make-svg-dc)
+(define (make-svg-dc filename)
+  (let ((dc (new svg-dc% [width 1000] [height 1300] [output filename] [exists 'truncate/replace])))
+    (send dc start-doc "...")
+    (send dc start-page)
+    dc))
+(provide finish-svg-dc)
+(define (finish-svg-dc svgdc)
+  (send svgdc end-page)
+  (send svgdc end-doc))
 
-(send global-drawing-context start-doc "...")
-(send global-drawing-context start-page)
-(send global-drawing-context set-smoothing 'smoothed)
+;(define global-drawing-context (new svg-dc% [width 1000] [height 1300] [output "amati_output.svg"] [exists 'truncate/replace])) 
 
-(send global-drawing-context set-pen "red" 0 'solid)
+;(send global-drawing-context start-doc "...")
+;(send global-drawing-context start-page)
+;(send global-drawing-context set-smoothing 'smoothed)
+
+(provide setup-dc)
+(define (setup-dc)
+  (send (current-drawing-context) set-pen "red" 0 'solid))
 
 (provide end-drawing)
 (define (end-drawing)
@@ -1563,18 +1577,15 @@
   (vruler -250 700 1400)
 
 
-  (send global-drawing-context set-font (make-font #:size 15 #:family 'default
-                                                   #:weight 'bold))
-  (send global-drawing-context set-text-foreground "black")
+  (send (current-drawing-context) set-font (make-font #:size 15 #:family 'default
+                                                      #:weight 'bold))
+  (send (current-drawing-context) set-text-foreground "black")
   ;(send dc draw-rectangle 0 0 500 30)
-  (send global-drawing-context draw-text drawing-title 100 50)
+  (send (current-drawing-context) draw-text drawing-title 100 50)
 
-  (send global-drawing-context set-font (make-font #:size 5 #:family 'default
-                                                   #:weight 'bold))
-  (send global-drawing-context draw-text coder 25 25)
-  ; ;;;;
-  (send global-drawing-context end-page)
-  (send global-drawing-context end-doc))
+  (send (current-drawing-context) set-font (make-font #:size 5 #:family 'default
+                                                      #:weight 'bold))
+  (send (current-drawing-context) draw-text coder 25 25))
 
 
 
