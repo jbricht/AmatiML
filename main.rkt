@@ -1075,23 +1075,11 @@
   (- y (* pct (+ y 305) (/ (+ y 305) (+ 431 305)))))
 
 (define (map-point p)
-  (let ((x (xcor p))
-        (y (ycor p)))
-    (let ((x (+ (* scale x) (* 0 y)))
-          
-          (y (+ (* 0 x) (* (- scale) y))))
-      (point (+ x (/ xx 2)) (+ y (/ yy 2))))))
-
-;(define (mp x y)
-;  (make-posn (+ x (quotient xx 2)) (- (quotient yy 2) y)))
-
-;(define (mp x y)
-;  (let ((p
-;  (point (+ x (quotient xx 2) (xcor origin)) (+ (- (quotient yy 2) y) (ycor origin)))))
-;    p))
-
-
-; *****************
+  (let-values ([(width height) (send (current-drawing-context) get-size)]
+               [(x) (xcor p)]
+               [(y) (ycor p)])
+    (point (+ x (/ width 2))
+           (- (/ height 2) y))))
 
 
 (define (drawit obj)
@@ -1567,8 +1555,18 @@
 
 (provide setup-dc)
 (define (setup-dc)
-  (send (current-drawing-context) set-pen "red" 0 'solid))
+  (send (current-drawing-context) set-smoothing 'smoothed)
+  #t)
 
+(provide dc-size)
+(provide dc-width)
+(provide dc-height)
+(define (dc-size)
+  (send (current-drawing-context) get-size))
+(define (dc-width)
+  (call-with-values dc-size (lambda (width height) width)))
+(define (dc-height)
+  (call-with-values dc-size (lambda (width height) height)))
 (provide end-drawing)
 (define (end-drawing)
   ; ;;;;
