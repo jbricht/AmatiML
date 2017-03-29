@@ -1066,14 +1066,10 @@
 
 ;(define scale 1.5)                         ; for 1 meter width
 
-(define scale (* 1.5 (/ 1000 914.4)))      ; for 36 inch width
+;(define scale (* 1.5 (/ 1000 914.4)))      ; for 36 inch width
 
-; *****************
-
-; a failed attempt at scaling...
-(define (mm y pct)
-  (- y (* pct (+ y 305) (/ (+ y 305) (+ 431 305)))))
-
+;TODO unify scale and map-point into a general transformation for all objects.
+(define scale 1)
 (define (map-point p)
   (let-values ([(width height) (send (current-drawing-context) get-size)]
                [(x) (xcor p)]
