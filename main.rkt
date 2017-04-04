@@ -4,29 +4,6 @@
 (module+ test
   (require rackunit))
 
-;; Notice
-;; To install (from within the package directory):
-;;   $ raco pkg install
-;; To install (once uploaded to pkgs.racket-lang.org):
-;;   $ raco pkg install <<name>>
-;; To uninstall:
-;;   $ raco pkg remove <<name>>
-;; To view documentation:
-;;   $ raco doc <<name>>
-;;
-;; For your convenience, we have included a LICENSE.txt file, which links to
-;; the GNU Lesser General Public License.
-;; If you would prefer to use a different license, replace LICENSE.txt with the
-;; desired license.
-;;
-;; Some users like to add a `private/` directory, place auxiliary files there,
-;; and require them in `main.rkt`.
-;;
-;; See the current version of the racket style guide here:
-;; http://docs.racket-lang.org/style/index.html
-
-;; Code here
-
 (provide drawp)
 (define drawp #t)
 
@@ -432,7 +409,6 @@
 (define verticals (lambda x (map vertical x)))
 
 (provide at)
-;(define (at V H) (intersect (vertical V) (horizontal H)))
 (define (at p q) (point (xcor p) (ycor q)))
   
 ;; Circles
@@ -520,7 +496,6 @@
 
 (provide circlethrough)
 (define (circlethrough p q r)
-  ; circle through points p, q, r
   (let* ((pq (bisector p q))
          (pr (bisector p r))
          (c (intersect pq pr)))
@@ -559,9 +534,6 @@
 (define (quadsolve a b c) ;; solutions to ax^2+bx+c = 0
   (let ((d (correct (- (* b b) (* 4 a c)))))
     (if (< d dthreshold)
-        ;        (begin (write (list '(quadsolve: no solutions) a b c d))
-        ;               (newline)
-        ;               (list (/ (* -2 a))))
         (callerror '(quadsolve: no solutions) a b c d)
         (let ((negb (- 0 b))
               (d (if (< d 0) 0 d)))
@@ -669,7 +641,6 @@
 
 (provide closest)
 (define (closest p pts)
-  ;  (write (list 'closest p pts))(newline)
   (if (< (distance p (car pts))
          (distance p (cadr pts)))
       (car pts)
@@ -750,9 +721,6 @@
 (provide midpoint)
 (define (midpoint p q) (pointfrom p q (/ 1 2)))
 
-;(provide at)
-; intersection of (vertical x) and l
-
 (define (point-at l x)
   (point x (+ (offset l) (* (slope l) x))))
 
@@ -801,8 +769,6 @@
   (let* ((pl (perpendicular l (center c)))
          (q (intersect pl l))
          (cl (closest q (intersect pl c))))
-    ;    (write (list '?? (- (distance (center c) cl) (radius c))))
-    ;    (newline)
     cl))
 
 (provide tangent)    
@@ -940,17 +906,6 @@
 
 (define (geometric-section p q) 
   (pointfrom p q (/ (- 3 (sqrt 5)) 2)))
-;(define (geometric-section p q)
-;  (let* ((perp-p (perpendicular (line p q) p))
-;         (perp-q (perpendicular (line p q) q))
-;         (circ (circle p (/ (distance p q) 2)))
-;         (r (top (intersect perp-p circ)))
-;         (s (intersect (perpendicular perp-p r) perp-q))
-;         (t (closest s (intersect (line p s) circ)))
-;         (u (closest p (intersect (line r s) (circle s (distance s t)))))
-;         (v (intersect (line p q) (perpendicular (line r s) u))))
-;    v))
-  
 
 (provide upper-left-flank)
 (define (upper-left-flank l c r)
@@ -1064,10 +1019,6 @@
     (send (current-drawing-context) set-pen arc-color 0 'solid)
     (send (current-drawing-context) draw-line (xcor p1) (ycor p1) (xcor p2) (ycor p2))))
 
-;(define scale 1.5)                         ; for 1 meter width
-
-;(define scale (* 1.5 (/ 1000 914.4)))      ; for 36 inch width
-
 ;TODO unify scale and map-point into a general transformation for all objects.
 (define scale 1)
 (define (map-point p)
@@ -1092,7 +1043,6 @@
 (define (draw-point p c)
   (if drawp 
       (begin (draw-point-1 p c)
-             ;             (if mirrorp (draw-point-1 (mirror p) c) 'nothing))
              (if #f (draw-point-1 (mirror p) c) 'nothing))
       'nothing))
 
@@ -1152,7 +1102,6 @@
       'nothing))
 
 (define (angle y x)
-  ;  (write (list 'ANGLE* y x)) (newline)
   (if (= x 0)
       (if (> y 0)
           (/ pi 2)
@@ -1185,7 +1134,7 @@
         (if (nearline? p (horizontal o))
             (if (> (xcor p) (xcor o)) 0 pi)
             (let ((q (intersect (horizontal o) (vertical p))))
-              (begin ;(write '!)
+              (begin 
                 (angle (- (ycor q) (ycor p)) (- (xcor q) (xcor o)))))))))
 
 ;; **********  under construction
@@ -1210,7 +1159,6 @@
              (map-point (vec+ c (point (* r (cos (+ a inc))) (* r (sin (+ a inc)))))))
         (darciter c r (+ a inc) b inc))))
 
-;(darc 0 0 100 (* pi 0.25) (* pi 1.25))
 
 ;; ********** end of construction
 
@@ -1235,7 +1183,6 @@
         'nothing)))
 
 (define (drawarc-a oo pt1 pt2 c)
-  ;  (write (list 'DA (- (distance oo pt1) (distance oo pt2)))) (newline)
   (drawarc-1 oo pt1 pt2 c)
   (if mirrorp (drawarc-1 (mirror oo) (mirror pt1) (mirror pt2) c) 'done))
 
@@ -1246,10 +1193,8 @@
   (set! arc-thickness n))
 
 (define (drawarc-1 oo pt1 pt2 c)
-  ;  (send dc set-pen c 1 'short-dash)
   (drawseg oo pt1)
   (drawseg oo pt2)
-  ;  (write (list 'DRAWARC oo pt1 pt2)) (newline)
   (let ((alpha (arcrad oo pt1))
         (beta (arcrad oo pt2))
         (r1 (distance (map-point oo) (map-point pt1)))
@@ -1258,20 +1203,11 @@
     (let ((alpha (min alpha beta))
           (beta (max alpha beta))
           (corner (vec+ (map-point oo) (scalevec r1 (point -1 -1)))))
-      ;            (write (list (r->ang alpha) (r->ang beta))) (newline)
       (send (current-drawing-context) set-pen "yellow" 0 'solid)
       (send (current-drawing-context) set-brush "yellow" 'transparent)
-      ;            (send dc draw-rectangle (xcor corner) (ycor corner) (* 2 r) (* 2 r))
       (send (current-drawing-context) set-pen c arc-thickness 'solid)
       (send (current-drawing-context) set-brush c 'transparent)
       (if (> (- beta alpha) pi)
-          ; 0.0 was 0.5
-          ;              (darc (+ 0.0 (xcor corner)) (+ 0.0 (ycor corner))
-          ;                                (* 2 (+ 0.0 r)) 
-          ;                                beta (+ alpha (* 2 pi)))
-          ;              (darc (+ 0.0 (xcor corner)) (+ 0.0 (ycor corner))
-          ;                                (* 2 (+ 0.0 r)) 
-          ;                                alpha beta)
           (send (current-drawing-context) draw-arc (+ 0.0 (xcor corner)) (+ 0.0 (ycor corner))
                 (* 2 (+ 0.0 r1)) (* 2 (+ 0.0 r1)) 
                 beta (+ alpha (* 2 pi)))
@@ -1280,26 +1216,6 @@
                 alpha beta)
           ))))
 
-; arcs by repeated segments
-
-     
-;            (let ((beta (if (> (- beta alpha) pi) (- beta pi) beta)))
-;              (send dc draw-arc (xcor corner) (ycor corner) 
-;                                (* 2 r) (* 2 r) 
-;                                alpha beta)))))
-
-
-;               (drawarc o pt2 pt1 c)
-;               (begin
-;                 (write (list p1 q1 p2 q2))(write (list (xdistance o corner)
-;                                                        (ydistance o corner)))
-;           (write (list (/ (* alpha 360) (* 2 pi))
-;                        (/ (* beta 360) (* 2 pi))))
-;            (draw-point oo "black") (draw-point pt1 "red") (draw-point pt2 "green")
-;            (draw-point corner "red")
-;            (send dc set-pen c 1 'solid)
-;            (send dc set-brush c 'transparent)
-;            (send dc draw-arc (xcor corner) (ycor corner) (* 2 r) (* 2 r) alpha beta)))))))))
 
 (define (polar r theta)
   (point (* r (cos (/ (* theta pi) 180)))
@@ -1307,25 +1223,9 @@
 
 
 (define (draw-solid-disk p n c) 'disk)
-;  (send dc draw-ellipse (xcor p) (ycor p) (+ (xcor p) 3) (+ (ycor p) 3)))
 
 (define (draw-solid-string p s) 'string)
   
-; (draw-solid-disk (make-pixel (xcor p) (ycor p)) 3 'blue)
-;    (draw-solid-string (make-pixel (+ (xcor p) 10) (+ (ycor p) 10)) s)))
-
-; *****************
-
-
-;(drawarc origin (polar 200 -45) (polar 200 45) "green")
-
-;(define corner (map-point (point -200 200)))
-;(draw-point (point -200 200) "red")
-;(send dc set-pen "green" 1 'solid)
-;(send dc set-brush "green" 'transparent)
-;(send dc draw-arc (xcor corner) (ycor corner) 400 400 (* pi 1.75) (* pi 2.25))
-
-;  NOW I PATCH IN...
 
 (define (drawsegment p1 p2)
   (draw-solid-line p1 p2 arc-color)
@@ -1351,13 +1251,6 @@
 (provide label)
 (define (label s p)
   (list 'point s (xcor p) (ycor p)))
-;  (if drawp
-;      (begin
-;        (label-1 s p)
-;        (if (< (xcor p) 0) (label-1 (string-append s "'") (mirror p)) 'foo)
-;        p)
-;      p))
- 
 
 ;; Drawing stuff
 
@@ -1458,27 +1351,27 @@
 (define (makeseg x y) (list 'segment x y))
 
 (provide sketch)
-(define (sketch instrument)
-  (if (eq? instrument 'off!)
-      (set! tracing #f)
-      (if (eq? instrument 'on!)
-          (set! tracing #t)
-          (if (null? instrument)
-              '()
-              (if (point? instrument)
-                  (draw-point instrument "red")
-                  (if (or (line? instrument) (circle? instrument))
-                      (drawit instrument)
-                      (if (begins-with? instrument 'curve)
-                          (apply draw-curve (cdr instrument))
-                          (if (begins-with? instrument 'arc)
-                              (drawarc (cadr instrument) (caddr instrument) (cadddr instrument) arc-color)
-                              (if (begins-with? instrument 'tangent)
-                                  (apply drawtangent (cdr instrument))
-                                  (if (begins-with? instrument 'segment)
-                                      (apply drawseg (cdr instrument))
-                                      (map sketch instrument)))))))))))
 
+(define (sketch instrument)
+  (cond
+    [(null? instrument)
+     '()]
+    [(point? instrument)
+     (draw-point instrument "red")]
+    [(or (line? instrument) (circle? instrument))
+     (drawit instrument)]
+    [(begins-with? instrument 'curve)
+     (apply draw-curve (cdr instrument))]
+    [(begins-with? instrument 'arc)
+     (drawarc (cadr instrument)
+              (caddr instrument)
+              (cadddr instrument)
+              arc-color)]
+    [(begins-with? instrument 'tangent)
+     (apply drawtangent (cdr instrument))]
+    [(begins-with? instrument 'segment)
+     (apply drawseg (cdr instrument))]
+    [else  (map sketch instrument)]))
 ; a thicker-drawn circle
 (provide enhance)
 (define (enhance obj)
@@ -1543,11 +1436,6 @@
   (send svgdc end-page)
   (send svgdc end-doc))
 
-;(define global-drawing-context (new svg-dc% [width 1000] [height 1300] [output "amati_output.svg"] [exists 'truncate/replace])) 
-
-;(send global-drawing-context start-doc "...")
-;(send global-drawing-context start-page)
-;(send global-drawing-context set-smoothing 'smoothed)
 
 (provide setup-dc)
 (define (setup-dc)
@@ -1565,8 +1453,6 @@
   (call-with-values dc-size (lambda (width height) height)))
 (provide end-drawing)
 (define (end-drawing)
-  ; ;;;;
-  ;(send dc erase)
   (hruler -400 475 800) 
   (vruler -250 700 1400)
 
@@ -1574,7 +1460,6 @@
   (send (current-drawing-context) set-font (make-font #:size 15 #:family 'default
                                                       #:weight 'bold))
   (send (current-drawing-context) set-text-foreground "black")
-  ;(send dc draw-rectangle 0 0 500 30)
   (send (current-drawing-context) draw-text drawing-title 100 50)
 
   (send (current-drawing-context) set-font (make-font #:size 5 #:family 'default
