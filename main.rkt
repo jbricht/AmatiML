@@ -1,6 +1,7 @@
 #lang racket
 (require racket/draw)
 
+
 (module+ test
   (require rackunit))
 
@@ -49,6 +50,13 @@
 
 (provide overhang)
 (define overhang cello-overhang)
+
+(provide sketch-points)
+(define sketch-points (make-parameter #t))
+(provide sketch-circles)
+(define sketch-circles (make-parameter #t))
+(provide sketch-lines)
+(define sketch-lines (make-parameter #t))
 
 (define dthreshold -0.75)
 
@@ -1357,16 +1365,21 @@
     [(null? instrument)
      '()]
     [(point? instrument)
-     (draw-point instrument "red")]
-    [(or (line? instrument) (circle? instrument))
-     (drawit instrument)]
+     (when (sketch-points) (draw-point instrument "red"))]
+    [(line? instrument) 
+     (when (sketch-lines) (drawit instrument))]
+    [(circle? instrument)
+     (when (sketch-circles) (begin (draw-bounding-box
+				     (circle-bounding-box instrument))
+				   (drawit instrument)))]
     [(begins-with? instrument 'curve)
-     (apply draw-curve (cdr instrument))]
+     (begin (draw-bounding-box (curve-bounding-box instrument))
+	    (apply draw-curve (cdr instrument)))]
     [(begins-with? instrument 'arc)
      (drawarc (cadr instrument)
-              (caddr instrument)
-              (cadddr instrument)
-              arc-color)]
+	      (caddr instrument)
+	      (cadddr instrument)
+	      arc-color)]
     [(begins-with? instrument 'tangent)
      (apply drawtangent (cdr instrument))]
     [(begins-with? instrument 'segment)
@@ -1416,8 +1429,59 @@
         (if (last? l)
             '()
             (segs (car l) (cdr l)))))
+(struct bounding-box (x0 y0 x1 y1)
+  #:transparent)
 
-;(provide global-drawing-context)
+(define (point-bounding-box p)
+  (bounding-box (xcor p) (ycor p)
+                (xcor p) (ycor p)))
+(define (circle-bounding-box c)
+  (let ([xc (xcor (center c))]
+        [yc (ycor (center c))]
+        [r (radius c)])
+    (bounding-box (- xc r) (- yc r)
+                  (+ xc r) (+ yc r))))
+(define (line-bounding-box l)
+  (bounding-box-union (point-bounding-box (first-point l))
+                      (point-bounding-box (second-point l))))
+(define (curve-bounding-box c)
+  (let* ([start (list-ref c 1)]
+         [finish (list-ref c 2)]
+         [stuff (list-ref c 3)]
+         [endpoint-bb (bounding-box-union (point-bounding-box start)
+                                          (point-bounding-box finish))])
+    (foldl (lambda (circ bb)
+             (bounding-box-union bb (circle-bounding-box circ)))
+           endpoint-bb
+           stuff)))
+(provide draw-bounding-boxes?)
+(define draw-bounding-boxes? (make-parameter #t))
+(define (draw-bounding-box bb)
+  (let* ([A (point (bounding-box-x0 bb) (bounding-box-y0 bb))]
+	 [B (point (bounding-box-x0 bb) (bounding-box-y1 bb))]
+	 [C (point (bounding-box-x1 bb) (bounding-box-y1 bb))]
+	 [D (point (bounding-box-x1 bb) (bounding-box-y0 bb))]
+	 [polypoints (map (lambda (p)
+			    (cons (xcor p) (ycor p)))
+			  (map map-point (list A B C D)))])
+    (when (draw-bounding-boxes?)
+      (send (current-drawing-context) draw-polygon polypoints))))
+
+(define minimal-bounding-box
+  (bounding-box +inf.0 +inf.0 -inf.0 -inf.0))
+(define maximal-bounding-box
+  (bounding-box -inf.0 -inf.0 +inf.0 +inf.0))
+
+(define (bounding-box-union bb1 bb2)
+  (bounding-box
+   (min (bounding-box-x0 bb1) (bounding-box-x0 bb2))
+   (min (bounding-box-y0 bb1) (bounding-box-y0 bb2))
+   (max (bounding-box-x1 bb1) (bounding-box-x1 bb2))
+   (max (bounding-box-y1 bb1) (bounding-box-y1 bb2))))
+
+
+
+
 ; initialize graphic output
 ; choose a dest through a dialog
 
