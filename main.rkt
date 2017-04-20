@@ -1281,6 +1281,8 @@
 (define (make-curve start finish stuff)
   (list 'curve start finish stuff))
 
+(define (curve? x)
+  (eq? (car x) 'curve))
 ; moving a curve in the y-direction: for bricolage...
 
 (provide ymove)
@@ -1369,11 +1371,11 @@
     [(line? instrument) 
      (when (sketch-lines) (drawit instrument))]
     [(circle? instrument)
-     (when (sketch-circles) (begin (draw-bounding-box
-				     (circle-bounding-box instrument))
+     (when (sketch-circles) (begin ;(draw-bounding-box
+				   ;  (circle-bounding-box instrument))
 				   (drawit instrument)))]
     [(begins-with? instrument 'curve)
-     (begin (draw-bounding-box (curve-bounding-box instrument))
+     (begin ;(draw-bounding-box (curve-bounding-box instrument))
 	    (apply draw-curve (cdr instrument)))]
     [(begins-with? instrument 'arc)
      (drawarc (cadr instrument)
@@ -1454,8 +1456,23 @@
              (bounding-box-union bb (circle-bounding-box circ)))
            endpoint-bb
            stuff)))
+
+(define (component-bounding-box c)
+  (cond [(point? c) (point-bounding-box c)]
+	[(line? c) (line-bounding-box c)]
+	[(circle? c) (circle-bounding-box c)]
+	[(curve? c) (curve-bounding-box c)]
+	[else (error "unsupported component")]))
+
+(provide instrument-bounding-box)
+(define (instrument-bounding-box ins)
+  (foldl bounding-box-union
+	 minimal-bounding-box
+	 (map component-bounding-box ins)))
+
 (provide draw-bounding-boxes?)
 (define draw-bounding-boxes? (make-parameter #t))
+(provide draw-bounding-box)
 (define (draw-bounding-box bb)
   (let* ([A (point (bounding-box-x0 bb) (bounding-box-y0 bb))]
 	 [B (point (bounding-box-x0 bb) (bounding-box-y1 bb))]
